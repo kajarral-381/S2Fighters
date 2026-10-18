@@ -307,6 +307,7 @@ const sfx = {
   warp() { tone(150, 2600, 2.2, 'sawtooth', 0.025); tone(75, 1300, 2.2, 'square', 0.015); noise(2.4, 0.06, 5000); seq([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 88, 91, [96, 3]], 0.11, 'square', 0.025); },
   perfect() { seq([72, 76, 79, 84, 79, 84, 88, 91, [96, 4]], 0.11, 'square', 0.03); seq([[48, 2], [52, 2], [55, 2], [60, 2], [48, 4]], 0.11, 'triangle', 0.06); },
   fanfare() { seq([79, 79, 79, [84, 3], 0, 83, 81, 83, [88, 4], 0, 86, 84, 83, [84, 6]], 0.11, 'square', 0.028); seq([[48, 4], [55, 4], [53, 4], [55, 4], [48, 6]], 0.11, 'triangle', 0.06); },
+  eshot() { tone(520, 180, 0.12, 'square', 0.012); },
   kick() { tone(150, 45, 0.11, 'sine', 0.12); },
   hat() { noise(0.035, 0.05, 9000); },
   tick() { tone(1500, 1500, 0.03, 'square', 0.018); },
@@ -359,7 +360,7 @@ if (!Array.isArray(table) || table.length !== 5) table = DEFAULT_TABLE.map(r => 
 let state = 'title', paused = false, time = 0, stateT = 0, crtOn = load('hw88-crt', true);
 let stage = 0, score = 0, hi = table[0][1], lives = 2, nextExtend = 20000;
 let shots = 0, hits = 0, challengeHits = 0, challengeTotal = 40;
-let enemies = [], bullets = [], parts = [], rings = [], popups = [], rescues = [], capsules = [], queue = [];
+let enemies = [], bullets = [], ebullets = [], parts = [], rings = [], popups = [], rescues = [], capsules = [], queue = [];
 let stageTime = 0, diveT = 2, morphT = 8, clearT = -1, warpT = 0, warpDur = 1.6, msg = null, readyT = 0, flashT = 0;
 let pendingRespawn = false, respawnT = 0, pendingOver = false, overT = 0, eid = 0, demoEnd = -1;
 let capsuleDropped = false, pendingJump = 0, beatAcc = 0, beatN = 0, starMul = 1;
@@ -436,7 +437,7 @@ function spawn(spec) {
 function nextStage() {
   const jump = pendingJump; pendingJump = 0;
   stage += 1 + jump;
-  bullets = []; enemies = []; queue = []; capsules = []; trios = {};
+  bullets = []; ebullets = []; enemies = []; queue = []; capsules = []; trios = {};
   form.t = 0; form.f = 0; form.full = false;
   clearT = -1; diveT = 2.5; morphT = rnd(6, 9); challengeHits = 0; challengeTotal = 40; capsuleDropped = false; beatAcc = 0;
   warpDur = jump ? 3.2 : 1.6; warpT = stage > 1 ? warpDur : 0;
@@ -448,13 +449,13 @@ function nextStage() {
 function startGame(isDemo) {
   demo = !!isDemo;
   score = 0; lives = demo ? 0 : 2; stage = 0; shots = 0; hits = 0; nextExtend = 20000;
-  enemies = []; bullets = []; parts = []; rings = []; popups = []; rescues = []; capsules = [];
+  enemies = []; bullets = []; ebullets = []; parts = []; rings = []; popups = []; rescues = []; capsules = [];
   pendingRespawn = false; pendingOver = false; readyT = 0; demoEnd = -1; pendingJump = 0;
   Object.assign(player, { x: W / 2, ships: 1, alive: true, inv: 2.2, fireCd: 0 });
   state = 'play'; stateT = 0;
   nextStage();
 }
-function toTitle(page = 0) { state = 'title'; stateT = page; demo = false; enemies = []; bullets = []; rescues = []; capsules = []; msg = null; setHum(0); }
+function toTitle(page = 0) { state = 'title'; stateT = page; demo = false; enemies = []; bullets = []; ebullets = []; rescues = []; capsules = []; msg = null; setHum(0); }
 function finishOver() {
   const rank = table.findIndex(r => score > r[1]);
   if (rank >= 0 && score > 0) {
@@ -485,7 +486,7 @@ function burst(x, y, cols, n = 14, sp = 60) {
   rings.push({ x, y, t: 0, c: cols[0] });
 }
 
-/* ---------- attacks (enemies never shoot) ---------- */
+/* ---------- attacks ---------- */
 function loopStart(e) {
   const dir = e.x < W / 2 ? -1 : 1;
   const p = [[e.x, e.y]];
@@ -506,7 +507,17 @@ function swoopPath(e) {
   const s = px < W / 2 ? 1 : -1;
   return arc(p, px + s * 22, 196, 22, s > 0 ? Math.PI : 0, s > 0 ? 0 : Math.PI);
 }
-function launch(e, path, st = 'dive') { e.path = path; e.pi = 0; e.state = st; e.speed = diveSpeed(); }
+function launch(e, path, st = 'dive') {
+  e.path = path; e.pi = 0; e.state = st; e.speed = diveSpeed();
+  e.shots = Math.random() < Math.min(0.85, 0.45 + stage * 0.05) ? (stage >= 3 && Math.random() < 0.5 ? 2 : 1) : 0;
+  e.shotCd = rnd(0.15, 0.6);
+}
+function enemyFire(e) {
+  if (ebullets.length >= 10) return;
+  const vy = Math.min(150, 110 + stage * 3), t = Math.max(0.4, (player.y - e.y) / vy);
+  ebullets.push({ x: e.x, y: e.y + 6, vx: clamp((player.x - e.x) / t + rnd(-10, 10), -50, 50), vy });
+  sfx.eshot();
+}
 function follow(lead, path, w, ox, oy) { launch(w, [[w.x, w.y], ...path.slice(1).map(([x, y]) => [x + ox, y + oy])]); }
 function pickDiver() {
   const pool = enemies.filter(e => e.state === 'form' && !e.morph && !e.morphReady);
@@ -614,6 +625,7 @@ function dimensionWarp() {
     if (e.captive && e.captive.state === 'held') { const [cx, cy] = captivePos(e); rescues.push({ x: cx, y: cy, angle: 0, t: 0 }); e.captive = null; }
     e.state = 'flee'; e.vy = -rnd(60, 120);
   }
+  ebullets = [];
 }
 
 /* ---------- demo pilot ---------- */
@@ -629,6 +641,7 @@ function demoPilot(dt) {
     const tg = enemies.filter(e => e.state === 'dive' || e.state === 'form' || e.state === 'beamGo' || e.state === 'home');
     if (tg.length) tx = tg.reduce((a, b) => (b.y > a.y ? b : a)).x;
   }
+  for (const b of ebullets) if (b.y > player.y - 60 && b.y < player.y + 4 && Math.abs(b.x + b.vx * (player.y - b.y) / b.vy - tx) < 12) tx = player.x + (b.x > player.x ? -40 : 40);
   for (const e of enemies) if (e.state === 'beam' && Math.abs(e.x - tx) < 30) tx = e.x + (tx < e.x ? -36 : 36);
   player.x += clamp(tx - player.x, -110 * dt, 110 * dt);
   if (player.fireCd <= 0) { tryFire(); player.fireCd = 0.22; }
@@ -774,8 +787,29 @@ function updatePlay(dt) {
     else if (e.state === 'beam') target = Math.PI;
     else if (Math.hypot(mx, my) > 0.05 && Math.hypot(mx, my) < 40) target = Math.atan2(my, mx) + Math.PI / 2;
     e.angle = lerpAngle(e.angle, target, Math.min(1, dt * 10));
+    if (e.state === 'dive' && !e.challenge && e.shots > 0 && player.alive && e.y > 70 && e.y < player.y - 60) {
+      e.shotCd -= dt;
+      if (e.shotCd <= 0) { e.shots--; e.shotCd = rnd(0.25, 0.45); enemyFire(e); }
+    }
   }
   enemies.push(...born);
+
+  // enemy shots
+  for (const b of ebullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
+  ebullets = ebullets.filter(b => b.y < H + 6 && b.x > -6 && b.x < W + 6);
+  if (player.alive && player.inv <= 0) {
+    for (const b of ebullets) {
+      const xs = shipXs();
+      const i = xs.findIndex(x => Math.abs(x - b.x) < 5 && Math.abs(player.y - b.y) < 6);
+      if (i < 0) continue;
+      b.dead = true;
+      burst(xs[i], player.y, BURST.player, 34, 80);
+      sfx.boom();
+      if (player.ships > 1) { removeShip(i); player.inv = 0.6; }
+      else { player.alive = false; loseLife(); break; }
+    }
+    ebullets = ebullets.filter(b => !b.dead);
+  }
 
   // transformed trios launch together
   const readyTrios = {};
@@ -813,7 +847,7 @@ function updatePlay(dt) {
   }
   bullets = bullets.filter(b => !b.dead);
 
-  // dives into the fighter (the only way to get hit)
+  // dives into the fighter
   if (player.alive && player.inv <= 0) {
     for (const e of enemies) {
       if (e.dead || e.challenge || e.state === 'form' || e.state === 'flee') continue;
@@ -880,7 +914,7 @@ function updatePlay(dt) {
     if (pendingOver) { overT -= dt; if (overT <= 0) { state = 'over'; stateT = 0; } }
     else if (pendingRespawn) {
       respawnT -= dt;
-      const busy = enemies.some(e => !e.challenge && (e.state === 'dive' || e.state === 'beam' || e.state === 'beamGo' || e.state === 'shard'))
+      const busy = ebullets.length > 0 || enemies.some(e => !e.challenge && (e.state === 'dive' || e.state === 'beam' || e.state === 'beamGo' || e.state === 'shard'))
         || enemies.some(e => e.captive && e.captive.state === 'rising');
       if (respawnT <= 0 && (!busy || respawnT < -8)) { pendingRespawn = false; readyT = 1.4; }
     } else if (readyT > 0) {
@@ -1007,8 +1041,8 @@ function drawTitle() {
       text(name, 58, y - 4, '#3ad6ff', 8, 'left');
       text(pts, 58, y + 5, '#f4f1ff', 8, 'left');
     });
-    text('NO ENEMY FIRE', W / 2, 214, '#ffd23a');
-    text('ONLY THEIR DIVES CAN HIT YOU', W / 2, 224, '#8c86bd');
+    text('WATCH OUT', W / 2, 214, '#ffd23a');
+    text('DIVERS SHOOT AS THEY ATTACK', W / 2, 224, '#8c86bd');
   } else {
     drawTable(112);
   }
@@ -1070,6 +1104,10 @@ function draw() {
     text('W', c.x, c.y + 0.5, '#f4f1ff');
   }
   for (const r of rescues) spr(r.t < 1 ? SPR.playerRed : SPR.player, r.x, r.y, r.angle);
+  for (const b of ebullets) {
+    ctx.fillStyle = (time * 16 | 0) % 2 ? '#ff3b5c' : '#ffd23a';
+    ctx.fillRect(b.x - 1, b.y - 2, 2, 4);
+  }
   for (const b of bullets) {
     ctx.fillStyle = '#f4f1ff'; ctx.fillRect(b.x - 0.5, b.y - 3, 1, 6);
     ctx.fillStyle = '#ff3b5c'; ctx.fillRect(b.x - 0.5, b.y + 2, 1, 1);
