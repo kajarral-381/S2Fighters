@@ -375,8 +375,8 @@ const NEBULA = [null, '#120a44', '#3a0630', '#003a30', '#3a2000', '#06244a', '#2
 
 const isChallenge = () => stage % 4 === 3;
 const shipOffsets = n => n === 1 ? [0] : n === 2 ? [-7, 7] : [-14, 0, 14];
-const enemySpeed = () => Math.min(178, 126 + stage * 4);
-const diveSpeed = () => Math.min(158, 106 + stage * 4);
+const enemySpeed = () => Math.min(140, 100 + stage * 3);
+const diveSpeed = () => Math.min(125, 85 + stage * 3);
 const dancing = e => e.challenge ? Math.sin(time * TAU * BPM / 120 + e.id * 0.6) * 4 : 0;
 const ex = e => e.x + dancing(e);
 
@@ -644,7 +644,7 @@ function demoPilot(dt) {
   for (const b of ebullets) if (b.y > player.y - 60 && b.y < player.y + 4 && Math.abs(b.x + b.vx * (player.y - b.y) / b.vy - tx) < 12) tx = player.x + (b.x > player.x ? -40 : 40);
   for (const e of enemies) if (e.state === 'beam' && Math.abs(e.x - tx) < 30) tx = e.x + (tx < e.x ? -36 : 36);
   player.x += clamp(tx - player.x, -110 * dt, 110 * dt);
-  if (player.fireCd <= 0) { tryFire(); player.fireCd = 0.22; }
+  if (player.fireCd <= 0) { tryFire(); player.fireCd = 0.32; }
 }
 
 /* ---------- update ---------- */
@@ -703,14 +703,14 @@ function updatePlay(dt) {
       if (keys.right) dir += 1;
       if (dir) player.x += dir * 115 * dt;
       else if (pointer.down) { const d = pointer.x - player.x; player.x += clamp(d, -130 * dt, 130 * dt); }
-      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.2; }
+      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.32; }
     }
     clampPlayer();
     player.inv = Math.max(0, player.inv - dt);
     player.fireCd -= dt;
   }
 
-  for (const b of bullets) b.y -= 330 * dt;
+  for (const b of bullets) b.y -= 260 * dt;
   bullets = bullets.filter(b => b.y > -8);
 
   // enemies
@@ -1180,7 +1180,7 @@ window.addEventListener('keydown', ev => {
   if (ev.code === 'KeyC') { toggleCRT(); return; }
   if (k === 'fire' || ev.code === 'Enter' || (demo && k)) { if (startOrContinue()) return; }
   if (!k) return;
-  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.25; }
+  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.35; }
   keys[k] = true;
 });
 window.addEventListener('keyup', ev => { const k = KEYMAP[ev.code]; if (k) keys[k] = false; });
@@ -1193,7 +1193,7 @@ cv.addEventListener('pointerdown', ev => {
   if (paused) { togglePause(); return; }
   try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
   pointer.down = true; pointer.x = toLocal(ev);
-  tryFire(); player.fireCd = 0.25;
+  tryFire(); player.fireCd = 0.35;
 });
 cv.addEventListener('pointermove', ev => { if (pointer.down) pointer.x = toLocal(ev); });
 const release = () => { pointer.down = false; };
