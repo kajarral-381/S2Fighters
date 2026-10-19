@@ -515,8 +515,8 @@ function launch(e, path, st = 'dive') {
 }
 function enemyFire(e) {
   if (ebullets.length >= 10) return;
-  const vy = Math.min(150, 110 + stage * 3), t = Math.max(0.4, (player.y - e.y) / vy);
-  ebullets.push({ x: e.x, y: e.y + 6, vx: clamp((player.x - e.x) / t + rnd(-10, 10), -50, 50), vy });
+  const vy = Math.min(110, 75 + stage * 2.5), t = Math.max(0.4, (player.y - e.y) / vy);
+  ebullets.push({ x: e.x, y: e.y + 6, vx: clamp((player.x - e.x) / t + rnd(-8, 8), -35, 35), vy });
   sfx.eshot();
 }
 function follow(lead, path, w, ox, oy) { launch(w, [[w.x, w.y], ...path.slice(1).map(([x, y]) => [x + ox, y + oy])]); }
