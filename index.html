@@ -727,7 +727,7 @@ function updatePlay(dt) {
     player.fireCd -= dt;
   }
 
-  for (const b of bullets) b.y -= 260 * dt;
+  for (const b of bullets) b.y -= 400 * dt;
   bullets = bullets.filter(b => b.y > -8);
 
   // enemies
