@@ -451,7 +451,7 @@ function startGame(isDemo) {
   score = 0; lives = demo ? 0 : 2; stage = 0; shots = 0; hits = 0; nextExtend = 20000;
   enemies = []; bullets = []; ebullets = []; parts = []; rings = []; popups = []; rescues = []; capsules = [];
   pendingRespawn = false; pendingOver = false; readyT = 0; demoEnd = -1; pendingJump = 0;
-  Object.assign(player, { x: W / 2, ships: 1, alive: true, inv: 2.2, fireCd: 0 });
+  Object.assign(player, { x: W / 2, ships: 2, alive: true, inv: 2.2, fireCd: 0 });
   state = 'play'; stateT = 0;
   nextStage();
   if (!demo) { const st = msg; say('WELCOME S-2 FIGHTERS', 2.6, '#ffd23a', 'LONG LIVE TIRASEE').next = st; }
@@ -720,7 +720,7 @@ function updatePlay(dt) {
       if (keys.right) dir += 1;
       if (dir) player.x += dir * 115 * dt;
       else if (pointer.down) { const d = pointer.x - player.x; player.x += clamp(d, -130 * dt, 130 * dt); }
-      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.107; }
+      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.214; }
     }
     clampPlayer();
     player.inv = Math.max(0, player.inv - dt);
@@ -936,7 +936,7 @@ function updatePlay(dt) {
       if (respawnT <= 0 && (!busy || respawnT < -8)) { pendingRespawn = false; readyT = 1.4; }
     } else if (readyT > 0) {
       readyT -= dt;
-      if (readyT <= 0) Object.assign(player, { alive: true, x: W / 2, ships: 1, inv: 2.0 });
+      if (readyT <= 0) Object.assign(player, { alive: true, x: W / 2, ships: 2, inv: 2.0 });
     }
   }
 
@@ -1219,7 +1219,7 @@ window.addEventListener('keydown', ev => {
   if (ev.code === 'KeyC') { toggleCRT(); return; }
   if (k === 'fire' || ev.code === 'Enter' || (demo && k)) { if (startOrContinue()) return; }
   if (!k) return;
-  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.117; }
+  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.234; }
   keys[k] = true;
 });
 window.addEventListener('keyup', ev => { const k = KEYMAP[ev.code]; if (k) keys[k] = false; });
@@ -1232,7 +1232,7 @@ cv.addEventListener('pointerdown', ev => {
   if (paused) { togglePause(); return; }
   try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
   pointer.down = true; pointer.x = toLocal(ev);
-  tryFire(); player.fireCd = 0.117;
+  tryFire(); player.fireCd = 0.234;
 });
 cv.addEventListener('pointermove', ev => { if (pointer.down) pointer.x = toLocal(ev); });
 const release = () => { pointer.down = false; };
