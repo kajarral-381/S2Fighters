@@ -363,7 +363,7 @@ let shots = 0, hits = 0, challengeHits = 0, challengeTotal = 40;
 let enemies = [], bullets = [], ebullets = [], parts = [], rings = [], popups = [], rescues = [], capsules = [], queue = [];
 let stageTime = 0, diveT = 2, morphT = 8, clearT = -1, warpT = 0, warpDur = 1.6, msg = null, readyT = 0, flashT = 0;
 let pendingRespawn = false, respawnT = 0, pendingOver = false, overT = 0, eid = 0, demoEnd = -1;
-let capsuleDropped = false, pendingJump = 0, beatAcc = 0, beatN = 0, starMul = 1;
+let capsuleDropped = false, lifeDropped = false, stageMiss = false, pendingJump = 0, beatAcc = 0, beatN = 0, starMul = 1;
 let trios = {};
 const entry = { letters: [0, 0, 0], idx: 0, t: 0, rank: -1 };
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ.!?';
@@ -384,7 +384,7 @@ function slotPos(e) {
   const sp = form.spread;
   return [W / 2 + (e.col - 4.5) * 16 * sp + form.sway, 46 + e.row * 15 * (1 + (sp - 1) * 0.8)];
 }
-function say(text, t = 2, col = '#3ad6ff', sub = '') { msg = { text, t, col, sub }; }
+function say(text, t = 2, col = '#3ad6ff', sub = '') { msg = { text, t, col, sub }; return msg; }
 function addScore(n) {
   if (demo) return;
   score += n;
@@ -439,7 +439,7 @@ function nextStage() {
   stage += 1 + jump;
   bullets = []; ebullets = []; enemies = []; queue = []; capsules = []; trios = {};
   form.t = 0; form.f = 0; form.full = false;
-  clearT = -1; diveT = 2.5; morphT = rnd(6, 9); challengeHits = 0; challengeTotal = 40; capsuleDropped = false; beatAcc = 0;
+  clearT = -1; diveT = 2.5; morphT = rnd(6, 9); challengeHits = 0; challengeTotal = 40; capsuleDropped = false; lifeDropped = false; stageMiss = false; beatAcc = 0;
   warpDur = jump ? 3.2 : 1.6; warpT = stage > 1 ? warpDur : 0;
   buildQueue();
   if (isChallenge()) say('CHALLENGING STAGE', 2.4, '#ffd23a', 'GALACTIC DANCE');
@@ -454,19 +454,20 @@ function startGame(isDemo) {
   Object.assign(player, { x: W / 2, ships: 1, alive: true, inv: 2.2, fireCd: 0 });
   state = 'play'; stateT = 0;
   nextStage();
+  if (!demo) { const st = msg; say('WELCOME S-2 FIGHTERS', 2.6, '#ffd23a', 'LONG LIVE TIRASEE').next = st; }
 }
 function toTitle(page = 0) { state = 'title'; stateT = page; demo = false; enemies = []; bullets = []; ebullets = []; rescues = []; capsules = []; msg = null; setHum(0); }
 function finishOver() {
   const rank = table.findIndex(r => score > r[1]);
   if (rank >= 0 && score > 0) {
     state = 'entry'; stateT = 0; entry.letters = [0, 0, 0]; entry.idx = 0; entry.rank = rank; sfx.fanfare();
-  } else toTitle();
+  } else toTitle(12);
 }
 function commitEntry() {
   const name = entry.letters.map(i => CHARS[i]).join('');
   table.splice(entry.rank, 0, [name, score]); table.length = 5;
   save('hw88-table', table); hi = Math.max(hi, table[0][1]);
-  toTitle(8);
+  toTitle(12);
 }
 function entryInput(kind) {
   if (state !== 'entry') return;
@@ -562,10 +563,12 @@ function startMorph() {
 function shipXs() { return shipOffsets(player.ships).map(o => player.x + o); }
 function clampPlayer() { const hw = 7 + 7 * (player.ships - 1); player.x = clamp(player.x, hw + 2, W - hw - 2); }
 function removeShip(i) {
+  stageMiss = true;
   const xs = shipXs(); xs.splice(i, 1);
   player.ships--; player.x = xs.reduce((a, b) => a + b, 0) / xs.length;
 }
 function loseLife() {
+  stageMiss = true;
   if (demo) { demoEnd = 1.8; return; }
   if (lives > 0) { lives--; pendingRespawn = true; respawnT = 2.2; }
   else { pendingOver = true; overT = 2.5; }
@@ -600,7 +603,11 @@ function killEnemy(e) {
     if (++tr.killed === tr.n) { addScore(1000); popups.push({ x, y: e.y - 10, text: 'TRIO 1000', t: 0, c: '#b85cff' }); }
   }
   if (e.type === 'cmd' && !inForm && !e.challenge && stage >= 2 && !capsuleDropped && Math.random() < 0.4) {
-    capsuleDropped = true; capsules.push({ x: e.x, y: e.y, t: 0 });
+    capsuleDropped = true; capsules.push({ x: e.x, y: e.y, t: 0, kind: 'warp' });
+  } else if (!inForm && !e.challenge && !demo && e.type !== 'shard') {
+    const r = Math.random();
+    if (r < 0.04 && !lifeDropped) { lifeDropped = true; capsules.push({ x: e.x, y: e.y, t: 0, kind: 'life' }); }
+    else if (r < 0.16) capsules.push({ x: e.x, y: e.y, t: 0, kind: 'score', pts: pick([500, 1000, 1500, 2000]) });
   }
   if (e.captive && e.captive.state === 'held') {
     const [cx, cy] = captivePos(e);
@@ -612,6 +619,16 @@ function killEnemy(e) {
       sfx.rescue();
       say('FIGHTER RESCUED', 1.8, '#33e07a');
     }
+  }
+}
+function collectItem(c) {
+  if (c.kind === 'warp') { dimensionWarp(); return; }
+  if (c.kind === 'life') {
+    lives++; sfx.extend();
+    popups.push({ x: c.x, y: c.y - 10, text: 'EXTRA LIFE', t: 0, c: '#33e07a' });
+  } else {
+    addScore(c.pts); sfx.rescue();
+    popups.push({ x: c.x, y: c.y - 10, text: 'BONUS ' + c.pts, t: 0, c: '#ffd23a' });
   }
 }
 function dimensionWarp() {
@@ -657,7 +674,7 @@ function update(dt) {
   const warp = warpFactor();
   for (const s of stars) { s.y += s.s * dt * starMul * warp; if (s.y > H) { s.y -= H; s.x = rnd(0, W); } }
   if (paused) { setHum(0); return; }
-  if (msg) { msg.t -= dt; if (msg.t <= 0) msg = null; }
+  if (msg) { msg.t -= dt; if (msg.t <= 0) msg = msg.next || null; }
   flashT = Math.max(0, flashT - dt);
   for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.97; p.vy *= 0.97; p.life -= dt; }
   parts = parts.filter(p => p.life > 0);
@@ -665,7 +682,7 @@ function update(dt) {
   rings = rings.filter(r => r.t < 0.3);
   for (const p of popups) { p.t += dt; p.y -= 10 * dt; }
   popups = popups.filter(p => p.t < 1.4);
-  if (state === 'title' && stateT > 16) startGame(true);
+  if (state === 'title' && stateT > 18) startGame(true);
   if (state === 'play' || state === 'result') updatePlay(dt);
   else setHum(0);
   if (state === 'over' && stateT > 6) finishOver();
@@ -866,7 +883,7 @@ function updatePlay(dt) {
   // warp capsules
   for (const c of capsules) {
     c.t += dt; c.y += 42 * dt; c.x += Math.sin(c.t * 3) * 12 * dt;
-    if (player.alive && shipXs().some(x => Math.abs(x - c.x) < 10) && Math.abs(c.y - player.y) < 10) { c.done = true; dimensionWarp(); }
+    if (player.alive && shipXs().some(x => Math.abs(x - c.x) < 10) && Math.abs(c.y - player.y) < 10) { c.done = true; collectItem(c); }
     if (c.y > H + 10) c.done = true;
   }
   capsules = capsules.filter(c => !c.done);
@@ -930,7 +947,14 @@ function updatePlay(dt) {
       const perfect = challengeHits === challengeTotal;
       addScore(perfect ? 20000 : challengeHits * 100);
       if (perfect) sfx.perfect(); else sfx.stage();
-    } else if (clearT < 0) clearT = pendingJump ? 2.6 : 2.0;
+    } else if (clearT < 0) {
+      clearT = pendingJump ? 2.6 : 2.0;
+      if (!demo) {
+        const bonus = 300 * stage + (stageMiss ? 0 : 2000);
+        addScore(bonus); sfx.ding();
+        say('STAGE CLEAR  +' + bonus, 2, '#33e07a', stageMiss ? '' : 'NO MISS BONUS 2000');
+      }
+    }
   }
   if (clearT >= 0 && state === 'play') { clearT -= dt; if (clearT < 0) nextStage(); }
   if (state === 'result' && stateT > 4) { state = 'play'; nextStage(); }
@@ -968,6 +992,14 @@ function drawBeam(e) {
   }
   ctx.globalAlpha = 1;
 }
+function drawItem(c) {
+  const cols = c.kind === 'life' ? ['#33e07a', '#f4f1ff'] : c.kind === 'score' ? ['#ffd23a', '#ff8a2a'] : ['#b85cff', '#3ad6ff', '#ffd23a', '#ff3b5c'];
+  ctx.fillStyle = cols[(time * 10 | 0) % cols.length];
+  ctx.fillRect(c.x - 6, c.y - 6, 12, 12);
+  ctx.fillStyle = '#000'; ctx.fillRect(c.x - 5, c.y - 5, 10, 10);
+  if (c.kind === 'life') spr(SPR.player, c.x, c.y, 0, 0.6);
+  else text(c.kind === 'score' ? '$' : 'W', c.x, c.y + 0.5, '#f4f1ff');
+}
 const nebulaCache = {};
 function drawNebula() {
   if (state === 'title' || state === 'entry') return;
@@ -995,6 +1027,10 @@ function drawHUD() {
   text('HIGH SCORE', W / 2, 6, '#ff3b5c');
   text(String(hi), W / 2, 15, '#f4f1ff');
   if (state === 'title' || state === 'entry') return;
+  if (!demo) {
+    text('LIVES', W - 24, 6, '#ff3b5c');
+    text(String(pendingOver || state === 'over' ? 0 : lives + 1), W - 24, 15, '#f4f1ff');
+  }
   for (let i = 0; i < Math.min(lives, 7); i++) spr(SPR.player, 9 + i * 12, H - 8, 0, 0.75);
   // stage badges: purple = 50, yellow = 10, blue = 5, red = 1
   let x = W - 5, n = stage;
@@ -1012,10 +1048,10 @@ function drawHUD() {
 const ORD = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 const ROWCOL = ['#ffd23a', '#3ad6ff', '#33e07a', '#b85cff', '#ff8a2a'];
 function drawTable(y0) {
-  shadowText('TOP 5 FIGHTERS', W / 2, y0, '#ff3b5c', 8, '#5a0a1e');
-  text('SCORE', 104, y0 + 18, '#8c86bd'); text('NAME', 172, y0 + 18, '#8c86bd');
+  shadowText('HALL OF FAME', W / 2, y0, '#ffd23a', 16, '#5a3a00');
+  text('SCORE', 104, y0 + 20, '#8c86bd'); text('NAME', 172, y0 + 20, '#8c86bd');
   table.forEach(([name, sc], i) => {
-    const y = y0 + 34 + i * 16;
+    const y = y0 + 36 + i * 15;
     text(ORD[i], 44, y, ROWCOL[i], 8, 'left');
     text(String(sc), 128, y, ROWCOL[i], 8, 'right');
     text(name, 172, y, ROWCOL[i]);
@@ -1025,8 +1061,13 @@ function drawTitle() {
   const bob = Math.sin(time * 2) * 2;
   shadowText('HIVEWING', W / 2, 62, '#f4f1ff', 24);
   shadowText("'88", W / 2, 88 + bob * 0.5, '#ff3b5c', 16, '#5a0a1e');
-  const page = stateT % 16 < 8 ? 0 : 1;
+  const page = Math.floor(stateT / 6) % 3;
   if (page === 0) {
+    text('WELCOME', W / 2, 122, '#8c86bd');
+    shadowText('S-2 FIGHTERS', W / 2, 146, '#ffd23a', 16, '#5a3a00');
+    for (const k of [-1, 0, 1]) spr(SPR.player, W / 2 + k * 22, 178 + Math.sin(time * 3 + k) * 2);
+    shadowText('LONG LIVE TIRASEE', W / 2, 208, '#ff3b5c', 8, '#5a0a1e');
+  } else if (page === 1) {
     const f = (time * 2.5 | 0) % 2;
     const rows = [
       [SPR.cmd[f], 'COMMANDER', '150  /  400+'],
@@ -1041,13 +1082,17 @@ function drawTitle() {
       text(name, 58, y - 4, '#3ad6ff', 8, 'left');
       text(pts, 58, y + 5, '#f4f1ff', 8, 'left');
     });
-    text('WATCH OUT', W / 2, 214, '#ffd23a');
-    text('DIVERS SHOOT AS THEY ATTACK', W / 2, 224, '#8c86bd');
+    text('DIVERS SHOOT AS THEY ATTACK', W / 2, 204, '#8c86bd');
+    [['score', 'BONUS PTS'], ['life', 'EXTRA LIFE'], ['warp', 'WARP']].forEach(([kind, label], i) => {
+      const x = 40 + i * 72;
+      drawItem({ kind, x, y: 222 });
+      text(label, x, 236, '#f4f1ff');
+    });
   } else {
     drawTable(112);
   }
   if ((time * 1.6 | 0) % 2 === 0) text('PRESS SPACE OR TAP', W / 2, 250, '#f4f1ff');
-  text('CATCH  W  CAPSULES TO WARP', W / 2, 270, '#b85cff');
+  text(page === 0 ? 'CATCH BONUS CAPSULES' : 'LONG LIVE TIRASEE', W / 2, 270, page === 0 ? '#b85cff' : '#ff3b5c');
 }
 function drawEntry() {
   shadowText('NEW HIGH SCORE', W / 2, 60, '#ffd23a', 8, '#5a3a00');
@@ -1097,12 +1142,7 @@ function draw() {
       else { const [cx, cy] = captivePos(e); spr(SPR.playerRed, cx, cy, e.angle + Math.PI); }
     }
   }
-  for (const c of capsules) {
-    ctx.fillStyle = ['#b85cff', '#3ad6ff', '#ffd23a', '#ff3b5c'][(time * 10 | 0) % 4];
-    ctx.fillRect(c.x - 5, c.y - 6, 10, 12);
-    ctx.fillStyle = '#000'; ctx.fillRect(c.x - 4, c.y - 5, 8, 10);
-    text('W', c.x, c.y + 0.5, '#f4f1ff');
-  }
+  for (const c of capsules) drawItem(c);
   for (const r of rescues) spr(r.t < 1 ? SPR.playerRed : SPR.player, r.x, r.y, r.angle);
   for (const b of ebullets) {
     ctx.fillStyle = (time * 16 | 0) % 2 ? '#ff3b5c' : '#ffd23a';
