@@ -575,7 +575,7 @@ function loseLife() {
 }
 function tryFire() {
   if (!player.alive || state !== 'play' || paused) return;
-  if (bullets.length > player.ships) return; // two volleys on screen at most
+  if (bullets.length >= player.ships * 10) return; // ten volleys on screen at most
   for (const x of shipXs()) bullets.push({ x, y: player.y - 8 });
   if (!demo) shots += player.ships;
   sfx.shoot();
@@ -720,7 +720,7 @@ function updatePlay(dt) {
       if (keys.right) dir += 1;
       if (dir) player.x += dir * 115 * dt;
       else if (pointer.down) { const d = pointer.x - player.x; player.x += clamp(d, -130 * dt, 130 * dt); }
-      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.32; }
+      if ((keys.fire || pointer.down) && player.fireCd <= 0) { tryFire(); player.fireCd = 0.107; }
     }
     clampPlayer();
     player.inv = Math.max(0, player.inv - dt);
@@ -1219,7 +1219,7 @@ window.addEventListener('keydown', ev => {
   if (ev.code === 'KeyC') { toggleCRT(); return; }
   if (k === 'fire' || ev.code === 'Enter' || (demo && k)) { if (startOrContinue()) return; }
   if (!k) return;
-  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.35; }
+  if (k === 'fire' && !keys.fire && !ev.repeat) { ensureAudio(); tryFire(); player.fireCd = 0.117; }
   keys[k] = true;
 });
 window.addEventListener('keyup', ev => { const k = KEYMAP[ev.code]; if (k) keys[k] = false; });
@@ -1232,7 +1232,7 @@ cv.addEventListener('pointerdown', ev => {
   if (paused) { togglePause(); return; }
   try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
   pointer.down = true; pointer.x = toLocal(ev);
-  tryFire(); player.fireCd = 0.35;
+  tryFire(); player.fireCd = 0.117;
 });
 cv.addEventListener('pointermove', ev => { if (pointer.down) pointer.x = toLocal(ev); });
 const release = () => { pointer.down = false; };
