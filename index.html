@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Hivewing 88</title>
+<title>S-2 Fighters</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
@@ -51,7 +51,7 @@
 </style>
 
 <div class="wrap">
-  <div class="screen"><canvas id="cv" class="crt" aria-label="Hivewing 88 game screen"></canvas></div>
+  <div class="screen"><canvas id="cv" class="crt" aria-label="S-2 Fighters game screen"></canvas></div>
   <div class="bar">
     <span><kbd>←</kbd> <kbd>→</kbd> move</span>
     <span><kbd>Space</kbd> fire</span>
@@ -354,7 +354,7 @@ function followPath(e, dt) {
 }
 
 /* ---------- game state ---------- */
-const DEFAULT_TABLE = [['HVW', 30000], ['NEO', 25000], ['ZAP', 20000], ['KIT', 15000], ['ACE', 10000]];
+const DEFAULT_TABLE = [['S2F', 30000], ['NEO', 25000], ['ZAP', 20000], ['KIT', 15000], ['ACE', 10000]];
 let table = load('hw88-table', DEFAULT_TABLE);
 if (!Array.isArray(table) || table.length !== 5) table = DEFAULT_TABLE.map(r => r.slice());
 let state = 'title', paused = false, time = 0, stateT = 0, crtOn = load('hw88-crt', true);
@@ -1059,12 +1059,11 @@ function drawTable(y0) {
 }
 function drawTitle() {
   const bob = Math.sin(time * 2) * 2;
-  shadowText('HIVEWING', W / 2, 62, '#f4f1ff', 24);
-  shadowText("'88", W / 2, 88 + bob * 0.5, '#ff3b5c', 16, '#5a0a1e');
+  shadowText('S-2', W / 2, 62, '#f4f1ff', 24);
+  shadowText('FIGHTERS', W / 2, 88 + bob * 0.5, '#ff3b5c', 16, '#5a0a1e');
   const page = Math.floor(stateT / 6) % 3;
   if (page === 0) {
-    text('WELCOME', W / 2, 122, '#8c86bd');
-    shadowText('S-2 FIGHTERS', W / 2, 146, '#ffd23a', 16, '#5a3a00');
+    shadowText('WELCOME', W / 2, 140, '#ffd23a', 16, '#5a3a00');
     for (const k of [-1, 0, 1]) spr(SPR.player, W / 2 + k * 22, 178 + Math.sin(time * 3 + k) * 2);
     shadowText('LONG LIVE TIRASEE', W / 2, 208, '#ff3b5c', 8, '#5a0a1e');
   } else if (page === 1) {
