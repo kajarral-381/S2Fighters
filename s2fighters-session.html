@@ -122,88 +122,136 @@ function makeSprite(rows, pal, shade = '#2a1856') {
 }
 const ROWS = {
   player: [
-    "......w......",
-    "......w......",
-    ".....wrw.....",
-    ".....waw.....",
-    "..r..waw..r..",
-    "..w.wwaww.w..",
-    "..wwwwrwwww..",
-    ".wwwwrrrwwww.",
-    "wwwwwwrwwwwww",
-    "www.bwwwb.www",
-    "ww...b.b...ww",
-    "w...........w",
+    ".......w.......",
+    "......wcw......",
+    "......wcw......",
+    ".....swaws.....",
+    ".....swaws.....",
+    "....sswwwss....",
+    "..r.swwrwws.r..",
+    "..w.wwrrrww.w..",
+    ".swwwwwrwwwwws.",
+    "swwwbwwwwwbwwws",
+    "sww.bbwwwbb.wws",
+    "sw...bswsb...ws",
+    "s.....s.s.....s",
   ],
+  // drone: teal shell beetle, three wing positions
   droneA: [
-    "..y.....y..",
-    "...y...y...",
-    "..bbbbbbb..",
-    ".bbybbbybb.",
-    "bbbbbbbbbbb",
-    "bab.bbb.bab",
-    "ba..yyy..ab",
-    "b...y.y...b",
-    "....y.y....",
+    ".a.........a.",
+    "..a.......a..",
+    "cc.a.yyy.a.cc",
+    "ccc.ybbby.ccc",
+    ".cc.bwbwb.cc.",
+    "...bbbbbbb...",
+    "..bybybybyb..",
+    "..bbbbbbbbb..",
+    "...bybybyb...",
+    "....b...b....",
+    "...b.....b...",
   ],
   droneB: [
-    "...y...y...",
-    "..y.....y..",
-    "..bbbbbbb..",
-    ".bbybbbybb.",
-    "bbbbbbbbbbb",
-    ".bbbbbbbbb.",
-    ".ab.yyy.ba.",
-    "ab..y.y..ba",
-    "....y.y....",
+    "..a.......a..",
+    "...a.....a...",
+    "....ayyya....",
+    "cc..ybbby..cc",
+    "cccbbwbwbbccc",
+    ".cc.bbbbb.cc.",
+    "..bybybybyb..",
+    "..bbbbbbbbb..",
+    "...bybybyb...",
+    "....b...b....",
+    "...b.....b...",
   ],
+  droneC: [
+    "..a.......a..",
+    "...a.....a...",
+    "....ayyya....",
+    "....ybbby....",
+    "...bbwbwbb...",
+    "cc.bbbbbbb.cc",
+    "cccbybybybccc",
+    ".ccbbbbbbbcc.",
+    "...bybybyb...",
+    "....b...b....",
+    "...b.....b...",
+  ],
+  // wasp: magenta-winged dragonfly
   waspA: [
-    "....r...r....",
-    ".....r.r.....",
-    "rr..ryyyr..rr",
-    "rrr.yywyy.rrr",
-    ".rrryyyyyrrr.",
-    "..rryyryyrr..",
-    "..r..yyy..r..",
-    "......r......",
-    "......r......",
+    "mm.........mm",
+    ".mm...l...mm.",
+    "..mm.lll.mm..",
+    "...mmlwlmm...",
+    "....mlllm....",
+    ".....lml.....",
+    ".....lll.....",
+    ".....lml.....",
+    "......l......",
+    "......m......",
   ],
   waspB: [
-    "....r...r....",
-    "rr...r.r...rr",
-    "rrr.ryyyr.rrr",
-    ".rrryywyyrrr.",
-    "..rryyyyyrr..",
-    "...ryyryyr...",
-    ".....yyy.....",
-    "......r......",
-    "......r......",
+    "......l......",
+    ".....lll.....",
+    "mmmmmlwlmmmmm",
+    ".mmmmlllmmmm.",
+    ".....lml.....",
+    ".....lll.....",
+    ".....lml.....",
+    "......l......",
+    "......m......",
+    "......m......",
   ],
+  waspC: [
+    "......l......",
+    ".....lll.....",
+    "....mlwlm....",
+    "...mmlllmm...",
+    "..mm.lml.mm..",
+    ".mm..lll..mm.",
+    "mm...lml...mm",
+    "......l......",
+    "......m......",
+    "......m......",
+  ],
+  // commander: gold-armoured warden with crimson pincers
   cmdA: [
-    "......y.y......",
+    "rr...........rr",
+    "r.r....y....r.r",
+    "r..r..yyy..r..r",
+    "....rgggggr....",
+    "...ggkgggkgg...",
+    "..gggwkgkwggg..",
+    "..ggggggggggg..",
+    ".rgg.ggrgg.ggr.",
+    "rr...grrrg...rr",
+    "r.....grg.....r",
     ".......g.......",
-    "....ggggggg....",
-    "...gpgggggpg...",
-    "..ggwwgggwwgg..",
-    "..ggwdgggdwgg..",
-    ".ggggggggggggg.",
-    "pggppgggggppggp",
-    "pp.ppgggggpp.pp",
-    "p..p.ggggg.p..p",
-    "p....g.g.g....p",
   ],
   cmdB: [
-    "......y.y......",
+    "...............",
+    ".rr....y....rr.",
+    "r..r..yyy..r..r",
+    "r...rgggggr...r",
+    "...ggkgggkgg...",
+    "..gggwkgkwggg..",
+    "..ggggggggggg..",
+    "..rg.ggrgg.gr..",
+    "..rr.grrrg.rr..",
+    "......grg......",
     ".......g.......",
-    "....ggggggg....",
-    "...gpgggggpg...",
-    "..ggwwgggwwgg..",
-    "..ggwdgggdwgg..",
-    ".ggggggggggggg.",
-    ".pgppgggggppgp.",
-    "..pppgggggppp..",
-    "...p.ggggg.p...",
-    "....pg.g.gp....",
+  ],
+  cmdC: [
+    "...............",
+    ".......y.......",
+    "......yyy......",
+    "...rrgggggrr...",
+    "..rggkgggkggr..",
+    "..gggwkgkwggg..",
+    ".rgggggggggggr.",
+    "r.rg.ggrgg.gr.r",
+    "r..rr.grg.rr..r",
+    ".rr...ggg...rr.",
+    ".......g.......",
   ],
   spinA: [
     "....p.p....",
@@ -234,21 +282,34 @@ const ROWS = {
     "o..o..o",
   ],
 };
-const SPLIT_PAL = { ...PAL, b:'#ff8a2a', a:'#ffd23a', y:'#f4f1ff' };
-const HURT_PAL = { ...PAL, g:'#5e8bff', p:'#3ad6ff' };
+const PLAYER_PAL = { ...PAL, c:'#9fe8ff', s:'#a9b4d8' };
+const DRONE_PAL = { ...PAL, a:'#9fe8ff', c:'#6fc8f0', y:'#ff8a2a', b:'#1fb5a0', w:'#f4f1ff' };
+const SPLIT_PAL = { ...DRONE_PAL, b:'#ff8a2a', y:'#fff2a0', c:'#ffd23a' };
+const WASP_PAL = { ...PAL, m:'#ff4fb8', l:'#9dff3a', w:'#f4f1ff' };
+const CMD_PAL = { ...PAL, r:'#e02a4a', y:'#fff2a0', g:'#ffc23a', k:'#3a1020', w:'#f4f1ff' };
+const HURT_PAL = { ...CMD_PAL, g:'#b8c0e0', r:'#5e8bff', y:'#9fe8ff', k:'#141030' };
+// a damaged commander shows a dark crack across its shell
+function cracked(rows) {
+  const out = rows.map(r => r.split(''));
+  for (const [y, x] of [[3, 7], [4, 6], [5, 7], [6, 8], [7, 9], [8, 8]]) if (out[y] && out[y][x] && out[y][x] !== '.') out[y][x] = 'k';
+  return out.map(r => r.join(''));
+}
+const tri = (pal, a, b, c) => [makeSprite(a, pal), makeSprite(b, pal), makeSprite(c, pal)];
 const SPR = {
-  player: makeSprite(ROWS.player, PAL),
-  playerRed: makeSprite(ROWS.player, { ...PAL, w:'#ff6a85', a:'#ffd23a', b:'#b85cff' }),
-  drone: [makeSprite(ROWS.droneA, PAL), makeSprite(ROWS.droneB, PAL)],
-  droneX: [makeSprite(ROWS.droneA, SPLIT_PAL), makeSprite(ROWS.droneB, SPLIT_PAL)],
-  wasp: [makeSprite(ROWS.waspA, PAL), makeSprite(ROWS.waspB, PAL)],
-  cmd: [makeSprite(ROWS.cmdA, PAL), makeSprite(ROWS.cmdB, PAL)],
-  cmdHurt: [makeSprite(ROWS.cmdA, HURT_PAL), makeSprite(ROWS.cmdB, HURT_PAL)],
+  player: makeSprite(ROWS.player, PLAYER_PAL),
+  playerRed: makeSprite(ROWS.player, { ...PLAYER_PAL, w:'#ff6a85', a:'#ffd23a', b:'#b85cff', s:'#a03a5a', c:'#ffd23a' }),
+  drone: tri(DRONE_PAL, ROWS.droneA, ROWS.droneB, ROWS.droneC),
+  droneX: tri(SPLIT_PAL, ROWS.droneA, ROWS.droneB, ROWS.droneC),
+  wasp: tri(WASP_PAL, ROWS.waspA, ROWS.waspB, ROWS.waspC),
+  cmd: tri(CMD_PAL, ROWS.cmdA, ROWS.cmdB, ROWS.cmdC),
+  cmdHurt: tri(HURT_PAL, cracked(ROWS.cmdA), cracked(ROWS.cmdB), cracked(ROWS.cmdC)),
   spinner: [makeSprite(ROWS.spinA, PAL), makeSprite(ROWS.spinB, PAL)],
   shard: makeSprite(ROWS.shard, PAL),
 };
+// animation frame from a running counter: three frames ping-pong (1-2-3-2), two frames alternate
+const fr = (arr, n) => arr.length === 3 ? arr[[0, 1, 2, 1][n % 4]] : arr[n % arr.length];
 const BURST = {
-  drone:['#2f5bff','#ffd23a','#f4f1ff'], wasp:['#ff3b5c','#ffd23a','#f4f1ff'], cmd:['#33e07a','#b85cff','#f4f1ff'],
+  drone:['#1fb5a0','#ff8a2a','#f4f1ff'], wasp:['#ff4fb8','#9dff3a','#f4f1ff'], cmd:['#ffc23a','#e02a4a','#f4f1ff'],
   spinner:['#b85cff','#3ad6ff','#f4f1ff'], shard:['#ff8a2a','#ffd23a'], player:['#f4f1ff','#ff3b5c','#3ad6ff','#ffd23a'],
 };
 
@@ -1048,12 +1109,12 @@ function spr(img, x, y, ang = 0, sc = 1) {
   ctx.save(); ctx.translate(x, y); if (ang) ctx.rotate(ang); if (sc !== 1) ctx.scale(sc, sc);
   ctx.drawImage(img, -img.width / 2, -img.height / 2); ctx.restore();
 }
-function enemyImg(e, f) {
-  if (e.morph > 0) return ((time * 10 | 0) % 2 ? SPR.spinner : SPR.drone)[f];
-  if (e.type === 'drone') return (e.split ? SPR.droneX : SPR.drone)[f];
-  if (e.type === 'wasp') return SPR.wasp[f];
-  if (e.type === 'spinner') return SPR.spinner[f];
-  if (e.type === 'cmd') return (e.hp < 2 && !e.challenge ? SPR.cmdHurt : SPR.cmd)[f];
+function enemyImg(e, n) {
+  if (e.morph > 0) return fr((time * 10 | 0) % 2 ? SPR.spinner : SPR.drone, n);
+  if (e.type === 'drone') return fr(e.split ? SPR.droneX : SPR.drone, n);
+  if (e.type === 'wasp') return fr(SPR.wasp, n);
+  if (e.type === 'spinner') return fr(SPR.spinner, n);
+  if (e.type === 'cmd') return fr(e.hp < 2 && !e.challenge ? SPR.cmdHurt : SPR.cmd, n);
   return SPR.shard;
 }
 function drawBeam(e) {
@@ -1131,10 +1192,10 @@ function drawTitle() {
   if (page === 0) {
     const f = (time * 2.5 | 0) % 2;
     const rows = [
-      [SPR.cmd[f], 'COMMANDER', '150  /  400+'],
-      [SPR.wasp[f], 'WASP', '80  /  160'],
-      [SPR.drone[f], 'DRONE', '50  /  100'],
-      [SPR.spinner[f], 'SPINNER TRIO', '160  /  320'],
+      [fr(SPR.cmd, time * 4 | 0), 'COMMANDER', '150  /  400+'],
+      [fr(SPR.wasp, time * 4 | 0), 'WASP', '80  /  160'],
+      [fr(SPR.drone, time * 4 | 0), 'DRONE', '50  /  100'],
+      [fr(SPR.spinner, time * 4 | 0), 'SPINNER TRIO', '160  /  320'],
     ];
     text('FORMATION / DIVING', W / 2 + 22, 116, '#8c86bd');
     rows.forEach(([img, name, pts], i) => {
@@ -1192,7 +1253,7 @@ function draw() {
   for (const e of enemies) if (e.state === 'beam') drawBeam(e);
   for (const e of enemies) {
     const spin = e.type === 'spinner' && e.state !== 'form' ? time * 10 : 0;
-    spr(enemyImg(e, e.state === 'form' ? f : (time * 6 | 0) % 2), ex(e), e.y, e.angle + spin);
+    spr(enemyImg(e, e.state === 'form' ? (time * 4 | 0) : (time * 12 | 0)), ex(e), e.y, e.angle + spin);
     const c = e.captive;
     if (c) {
       if (c.state === 'rising') spr(SPR.playerRed, c.x, c.y, c.spin);
@@ -1211,14 +1272,21 @@ function draw() {
     ctx.fillStyle = '#ff3b5c'; ctx.fillRect(b.x - 0.5, b.y + 2, 1, 1);
   }
   if (player.alive && (player.inv <= 0 || (time * 12 | 0) % 2 === 0)) {
-    for (const x of shipXs()) spr(SPR.player, x, player.y);
+    const flick = (time * 24 | 0) % 2;
+    for (const x of shipXs()) {
+      ctx.fillStyle = flick ? '#ffd23a' : '#ff8a2a';
+      ctx.fillRect(x - 2.5, player.y + 6, 1, 2 + flick); ctx.fillRect(x + 1.5, player.y + 6, 1, 2 + flick);
+      spr(SPR.player, x, player.y);
+    }
     if (flashT > 0) {
       ctx.globalAlpha = flashT / 0.45; ctx.fillStyle = '#f4f1ff';
       for (const x of shipXs()) ctx.fillRect(x - 7, player.y - 6, 14, 12);
       ctx.globalAlpha = 1;
     }
   }
-  for (const r of rings) { ctx.globalAlpha = 1 - r.t / 0.3; ctx.strokeStyle = r.c; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(r.x, r.y, 2 + r.t * 40, 0, TAU); ctx.stroke(); }
+  for (const r of rings) { ctx.globalAlpha = 1 - r.t / 0.3; ctx.strokeStyle = r.c; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(r.x, r.y, 2 + r.t * 40, 0, TAU); ctx.stroke();
+    if (r.t < 0.16) { ctx.fillStyle = '#f4f1ff'; for (let i = 0; i < 8; i++) { const a = i * TAU / 8, L = 3 + r.t * 70; ctx.fillRect(r.x + Math.cos(a) * L - 0.5, r.y + Math.sin(a) * L - 0.5, 1, 1); } }
+  }
   ctx.globalAlpha = 1;
   for (const p of parts) { ctx.fillStyle = p.c; const s = p.life > 0.45 ? 2 : 1; ctx.fillRect(p.x, p.y, s, s); }
   for (const p of popups) text(p.text, p.x, p.y, p.c);
